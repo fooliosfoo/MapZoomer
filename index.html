@@ -8,12 +8,15 @@
   <style>
     body {
       margin: 0;
-      background-color: #121212;
+      background-color: #1a1a1a;
       font-family: "Cinzel", serif;
     }
     #map {
       height: 100vh;
       width: 100%;
+    }
+    .leaflet-image-layer {
+      transition: opacity 0.5s ease-in-out;
     }
   </style>
 </head>
@@ -22,25 +25,44 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Define image bounds (adjust to match your image's coordinate system)
-    const imageBounds = [[0, 0], [1000, 1000]]; // [southWest, northEast] corners
+    // Define bounds for the full map and the central town
+    const outerBounds = [[0, 0], [1000, 1000]];
+    const centerBounds = [[400, 400], [600, 600]];
 
-    // Initialize map
+    // Initialize map with simple CRS
     const map = L.map('map', {
-      crs: L.CRS.Simple, // Use simple coordinate reference system
+      crs: L.CRS.Simple,
       minZoom: -2,
       maxZoom: 2,
       zoomSnap: 0.25
     });
 
-    // Add image overlay
-    const imageUrl = 'strixhaven-campus-map.jpg'; // Make sure this is in the same directory or use full path
-    L.imageOverlay(imageUrl, imageBounds).addTo(map);
+    // Base map image
+    const baseImage = L.imageOverlay('strixhaven-campus-map.jpg', outerBounds).addTo(map);
 
-    // Fit map to image bounds
-    map.fitBounds(imageBounds);
+    // Town overlay image (initially hidden)
+    const townImage = L.imageOverlay('central-campus.jpg', centerBounds, {
+      opacity: 0 // Start invisible
+    }).addTo(map);
 
-    // Optional: Add a marker for a town
+    let townVisible = false;
+
+    // Fit map to full bounds
+    map.fitBounds(outerBounds);
+
+    // Zoom-based visibility toggle
+    map.on('zoomend', () => {
+      const currentZoom = map.getZoom();
+      if (currentZoom >= 1 && !townVisible) {
+        townImage.setOpacity(1);
+        townVisible = true;
+      } else if (currentZoom < 1 && townVisible) {
+        townImage.setOpacity(0);
+        townVisible = false;
+      }
+    });
+
+    // Optional: Add a marker in the center
     const marker = L.marker([500, 500]).addTo(map)
       .bindPopup("<strong>Archway of Eldritch Lore</strong><br>Where magical scholars gather.");
   </script>
