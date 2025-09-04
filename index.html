@@ -25,45 +25,62 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Define bounds for the full map and the central town
-    const outerBounds = [[0, 0], [1000, 1000]];
-    const centerBounds = [[400, 400], [600, 600]];
+    // Define bounds
+    const outerBounds = [[0, 0], [1000, 1000]]; // Full map
+    const centerBounds = [[400, 400], [600, 600]]; // Town
+    const buildingBounds = [[550, 550], [600, 600]]; // Building in bottom-right of town
 
-    // Initialize map with simple CRS
+    // Initialize map
     const map = L.map('map', {
       crs: L.CRS.Simple,
       minZoom: -2,
-      maxZoom: 2,
+      maxZoom: 4, // Allow deeper zoom
       zoomSnap: 0.25
     });
 
-    // Base map image
+    // Base map
     const baseImage = L.imageOverlay('strixhaven-campus-map.jpg', outerBounds).addTo(map);
 
-    // Town overlay image (initially hidden)
+    // Town overlay
     const townImage = L.imageOverlay('central-campus.jpg', centerBounds, {
-      opacity: 0 // Start invisible
+      opacity: 0
+    }).addTo(map);
+
+    // Building overlay
+    const buildingImage = L.imageOverlay('1st Floor.png', buildingBounds, {
+      opacity: 0
     }).addTo(map);
 
     let townVisible = false;
+    let buildingVisible = false;
 
-    // Fit map to full bounds
     map.fitBounds(outerBounds);
 
-    // Zoom-based visibility toggle
+    // Zoom-based visibility logic
     map.on('zoomend', () => {
-      const currentZoom = map.getZoom();
-      if (currentZoom >= 1 && !townVisible) {
+      const zoom = map.getZoom();
+
+      // Town visibility
+      if (zoom >= 1 && !townVisible) {
         townImage.setOpacity(1);
         townVisible = true;
-      } else if (currentZoom < 1 && townVisible) {
+      } else if (zoom < 1 && townVisible) {
         townImage.setOpacity(0);
         townVisible = false;
       }
+
+      // Building visibility
+      if (zoom >= 1.75 && !buildingVisible) {
+        buildingImage.setOpacity(1);
+        buildingVisible = true;
+      } else if (zoom < 1.75 && buildingVisible) {
+        buildingImage.setOpacity(0);
+        buildingVisible = false;
+      }
     });
 
-    // Optional: Add a marker in the center
-    const marker = L.marker([500, 500]).addTo(map)
+    // Optional marker
+    L.marker([500, 500]).addTo(map)
       .bindPopup("<strong>Archway of Eldritch Lore</strong><br>Where magical scholars gather.");
   </script>
 </body>
