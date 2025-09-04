@@ -3,22 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fantasy Countryside Map</title>
+  <title>Strixhaven Fantasy Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       margin: 0;
+      background-color: #121212;
       font-family: "Cinzel", serif;
-      background-color: #1e1e1e;
-      color: #f0e6d2;
     }
     #map {
       height: 100vh;
       width: 100%;
-    }
-    .leaflet-popup-content {
-      font-size: 1.1em;
-      font-family: "Papyrus", fantasy;
     }
   </style>
 </head>
@@ -27,34 +22,27 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // Define image bounds (adjust to match your image's coordinate system)
+    const imageBounds = [[0, 0], [1000, 1000]]; // [southWest, northEast] corners
+
     // Initialize map
-    const map = L.map('map').setView([0, 0], 3); // Centered at origin, zoom level 3
-
-    // Add fantasy-style tile layer (you can replace this with a custom image or fantasy tiles)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Fantasy Map © Imaginary Cartographers',
-      maxZoom: 18,
-    }).addTo(map);
-
-    // Add towns and villages (visible at higher zoom levels)
-    const locations = [
-      { name: "Elderglen", coords: [0.5, 0.5], minZoom: 6 },
-      { name: "Thornwick", coords: [-0.3, 0.8], minZoom: 7 },
-      { name: "Moonshade", coords: [0.2, -0.4], minZoom: 8 },
-    ];
-
-    map.on('zoomend', () => {
-      const currentZoom = map.getZoom();
-      locations.forEach(loc => {
-        if (currentZoom >= loc.minZoom && !loc.marker) {
-          loc.marker = L.marker(loc.coords).addTo(map)
-            .bindPopup(`<strong>${loc.name}</strong><br>A quaint village with mysterious charm.`);
-        } else if (currentZoom < loc.minZoom && loc.marker) {
-          map.removeLayer(loc.marker);
-          loc.marker = null;
-        }
-      });
+    const map = L.map('map', {
+      crs: L.CRS.Simple, // Use simple coordinate reference system
+      minZoom: -2,
+      maxZoom: 2,
+      zoomSnap: 0.25
     });
+
+    // Add image overlay
+    const imageUrl = 'strixhaven-campus-map.jpg'; // Make sure this is in the same directory or use full path
+    L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
+    // Fit map to image bounds
+    map.fitBounds(imageBounds);
+
+    // Optional: Add a marker for a town
+    const marker = L.marker([500, 500]).addTo(map)
+      .bindPopup("<strong>Archway of Eldritch Lore</strong><br>Where magical scholars gather.");
   </script>
 </body>
 </html>
